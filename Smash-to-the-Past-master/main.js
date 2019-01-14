@@ -9,13 +9,17 @@ function preload() {
     game.load.image('dude', 'assets/mini boss.png');
     game.load.image("p2",'assets/small knight.png');
     game.load.image('box', 'assets/box.png');
-    game.load.spritesheet('boss','assets/Boss.png',68,84);
+    game.load.spritesheet('boss','assets/Boss.png',84,74);
+    game.load.image('slash','assets/mew.png');
     game.load.spritesheet('button', 'assets/Button (1).png', 63, 26);
 }
 
 var player;
 var player2;
-var boss;
+var boss =
+{
+    "hp": 100
+};
 //var w = game.input.keyboard.addkey(new Key(game,Phaser.keyCode.W));
 var platforms;
 var cursors;
@@ -72,6 +76,9 @@ function create() {
     player2 = game.add.sprite(500,game.world.height - 150,'p2');
     boss = game.add.sprite(700,game.world.height - 150,'boss');
 
+    //Attack
+    attack = game.add.sprite(player.x,player.y, 'slash');
+    
     //  We need to enable physics on the player
     game.physics.arcade.enable(player);
     game.physics.arcade.enable(player2);
@@ -119,7 +126,17 @@ function update() {
     tick++;
     game.physics.arcade.overlap(player, objects, pushStuff, null, this);
 
-
+    //Cat(Attack) follows player
+    attack.x = player.x+10;
+    attack.y = player.y;
+    
+    //DOESNT FREAKING WORK
+    game.physics.arcade.overlap(attack, boss, damageBoss, null, this);
+    
+    if (boss.hp <= 0) {
+        boss.kill;
+    } 
+    
     //  Reset the players velocity (movement)
     player.body.velocity.x = 0;
     player.body.velocity.y = 0;
@@ -163,11 +180,17 @@ function update() {
     }
     bossMovement();
     //tracking(boss,player);
-   // sector(100,player.x-boss.x,player.y-boss.y,25,0);
+    sector(100,player.x-boss.x,player.y-boss.y,25,0);
 }
 
 function pushStuff (player, objects) {
     
+}
+
+//WHY WONT THIS WERK?!
+function damageBoss () {
+    boss.hp -= 10;
+    console.log ("Boss HP: " + boss.hp);
 }
 
 function pressed () {
@@ -228,17 +251,19 @@ function sector(radius,x,y,percent,start)
     const polrad = Math.sqrt(x*x+y*y);
     const angle = Math.atan(y/x);
     
-    if (angle>=start && angle<=end && polrad<radius) 
+    if (angle>=start && angle<=end && polrad<radius) {
         tracking(boss,player);
-    else
+    }
+    /* else {
         console.log("Point"+"("+x+","+y+")"+ 
         " this point doesn't exist in the circle sector\n"); 
+    } */
 }
 
 function bossMovement()
 {
-    console.log(boss.x + " this is the x");
-    console.log(boss.y + " this is the y");
+    //console.log(boss.x + " this is the x");
+    //console.log(boss.y + " this is the y");
     if(boss.x < 700 && boss.x > 200)
         {
             
@@ -278,7 +303,7 @@ function bossMovement()
                     boss.body.velocity.y = 150;
                 }
             else{
-                console.log('hi');
+                //console.log('hi');
                 boss.body.velocity.y = -150;
             }
         }
