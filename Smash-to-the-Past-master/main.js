@@ -10,16 +10,15 @@ function preload() {
     game.load.image("p2",'assets/small knight.png');
     game.load.image('box', 'assets/box.png');
     game.load.spritesheet('boss','assets/Boss.png',84,74);
-    game.load.image('slash','assets/mew.png');
+    game.load.spritesheet('slash','assets/mew.png', 280, 194);
+    game.load.spritesheet('eSlash','assets/mew2.png');
     game.load.spritesheet('button', 'assets/Button (1).png', 63, 26);
 }
 
 var player;
 var player2;
-var boss =
-{
-    "hp": 100
-};
+var boss;
+var bossHp= 100;
 //var w = game.input.keyboard.addkey(new Key(game,Phaser.keyCode.W));
 var platforms;
 var cursors;
@@ -32,12 +31,21 @@ var ground;
 var Button;
 var box;
 var press = false;
+var wKey;
+
 
 function create() {
-
+    
     //  We're going to be using physics, so enable the Arcade Physics system
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    //W key
+    wKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+    aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+    sKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
+    dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+    
+    
     //  A simple background for our game
     game.add.sprite(0, 0, 'sky');
     game.world.setBounds(0,0,1240,1629);
@@ -78,6 +86,10 @@ function create() {
 
     //Attack
     attack = game.add.sprite(player.x,player.y, 'slash');
+    game.physics.enable(attack);
+
+    //enemyAttack (eAttack)
+    eAttack = game.add.sprite(boss.x, boss.y, 'eSlash');
     
     //  We need to enable physics on the player
     game.physics.arcade.enable(player);
@@ -124,25 +136,32 @@ function update() {
     
     pressed();
     tick++;
-    game.physics.arcade.overlap(player, objects, pushStuff, null, this);
+    game.physics.arcade.overlap(player, objects, pushStuff(), null, this);
 
     //Cat(Attack) follows player
     attack.x = player.x+10;
     attack.y = player.y;
+    //Follows Enemy
+    eAttack.x = boss.x-475;
+    eAttack.y = boss.y-100;
+    //Attack
+    game.physics.arcade.overlap(attack, boss, damageBoss(), null, this);
     
-    //DOESNT FREAKING WORK
-    game.physics.arcade.overlap(attack, boss, damageBoss, null, this);
     
-    if (boss.hp <= 0) {
-        boss.kill;
+    
+    if (bossHp <= 0) {
+        boss.kill();
     } 
     
     //  Reset the players velocity (movement)
     player.body.velocity.x = 0;
     player.body.velocity.y = 0;
+    player2.body.velocity.x = 0;
+    player2.body.velocity.y = 0;
     boss.body.velocity.x = 0;
     boss.body.velocity.y = 0;
 
+    //Player 1 Movement
     if (cursors.left.isDown)
     {
         //  Move to the left
@@ -173,24 +192,54 @@ function update() {
         //player.frame = 4;
     }
     
-    //  Allow the player to jump if they are touching the ground.
-    if (cursors.up.isDown && player.body.touching.down && hitPlatform)
+    //Player 2 Movement
+    if (aKey.isDown)
     {
-        player.body.velocity.y = -350;
+        //  Move to the left
+        player2.body.velocity.x = -150;
+
+       // player.animations.play('left');
     }
-    bossMovement();
-    //tracking(boss,player);
-    sector(100,player.x-boss.x,player.y-boss.y,25,0);
+    else if (dKey.isDown)
+    {
+        //  Move to the right
+        player2.body.velocity.x = 150;
+
+        //player.animations.play('right');
+    }
+    else if (sKey.isDown)
+        {
+            player2.body.velocity.y =  150;
+        }
+    else if (wKey.isDown)
+        {
+            player2.body.velocity.y = -150;
+        }
+    else
+    {
+        //  Stand still
+        player2.animations.stop();
+
+        //player.frame = 4;
+    }
+    
+    //bossMovement();
+    tracking(boss,player);
+    //sector(100,player.x-boss.x,player.y-boss.y,25,0);
 }
 
 function pushStuff (player, objects) {
     
 }
 
-//WHY WONT THIS WERK?!
+//Attack
 function damageBoss () {
-    boss.hp -= 10;
-    console.log ("Boss HP: " + boss.hp);
+    if (game.physics.arcade.overlap(attack, boss)) {
+        bossHp -= .5;
+        console.log ("Boss HP: " + bossHp);
+    }
+    console.log(attack.x + ", " + attack.y);
+    console.log(boss.x + ", " + boss.y);
 }
 
 function pressed () {
