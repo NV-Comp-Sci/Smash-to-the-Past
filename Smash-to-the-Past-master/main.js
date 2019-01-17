@@ -34,7 +34,8 @@ var Button;
 var box;
 var press = false;
 
-
+var spacebar;
+var escape; 
 
 
 function create() {
@@ -99,7 +100,7 @@ function create() {
 
     //keyboard declariations
     spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    escape = game.input.keyboard.addKey(Phaser.Keyboard.ESCAPE);
+    escape = game.input.keyboard.addKey(Phaser.Keyboard.V);
     
     
     //  Our two animations, walking left and right.
