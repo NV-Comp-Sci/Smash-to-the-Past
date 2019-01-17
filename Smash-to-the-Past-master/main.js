@@ -16,7 +16,11 @@ function preload() {
 }
 
 var player;
+var p1Hp= 100;
+var p2Hp= 100;
 var player2;
+var p1AT= 10;
+var p2AT= 10;
 var boss;
 var bossHp= 100;
 //var w = game.input.keyboard.addkey(new Key(game,Phaser.keyCode.W));
@@ -44,6 +48,8 @@ function create() {
     aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
     sKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
     dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+    qKey = game.input.keyboard.addKey(Phaser.Keyboard.Q);
+    eKey = game.input.keyboard.addKey(Phaser.Keyboard.E);
     
     
     //  A simple background for our game
@@ -81,15 +87,18 @@ function create() {
 
     // The player and its settings
     player = game.add.sprite(32, game.world.height - 150, 'dude');
-    player2 = game.add.sprite(500,game.world.height - 150,'p2');
+    player2 = game.add.sprite(32,game.world.height - 300,'p2');
     boss = game.add.sprite(700,game.world.height - 150,'boss');
 
     //Attack
-    attack = game.add.sprite(player.x,player.y, 'slash');
+    attack = game.add.sprite(-1000,-1000, 'slash');
     game.physics.enable(attack);
-
+    //P2 Attack
+    p2Attack = game.add.sprite(-1000,-1000, 'slash');
+    game.physics.enable(p2Attack);
     //enemyAttack (eAttack)
-    eAttack = game.add.sprite(boss.x, boss.y, 'eSlash');
+    eAttack = game.add.sprite(-1000, -1000, 'eSlash');
+    game.physics.enable(eAttack);
     
     //  We need to enable physics on the player
     game.physics.arcade.enable(player);
@@ -138,20 +147,43 @@ function update() {
     tick++;
     game.physics.arcade.overlap(player, objects, pushStuff(), null, this);
 
-    //Cat(Attack) follows player
-    attack.x = player.x+10;
-    attack.y = player.y;
-    //Follows Enemy
-    eAttack.x = boss.x-475;
+    //Attack Follows Enemy
+    /*eAttack.x = boss.x-475;
     eAttack.y = boss.y-100;
+    */
+    
     //Attack
-    game.physics.arcade.overlap(attack, boss, damageBoss(), null, this);
+    game.physics.arcade.overlap(p2Attack, boss, damageBoss(), null, this);
+    game.physics.arcade.overlap(eAttack, player, damagePlayer(), null, this);
+    p1AT -=1;
+    p2AT -=1;
     
+    //Old Attack Performance
+    /* if(p1AT <=0) {
+        //attack.x = -1000;
+        //attack.y = -1000;
+        attack.kill();
+    } */
     
+    if(p2AT <=0) {
+        p2Attack.x = -1000;
+        p2Attack.y = -1000;
+    }
     
+    //Enemy Death
     if (bossHp <= 0) {
         boss.kill();
     } 
+    
+    
+    //Player Death
+    if (p1Hp <= 0) {
+        player.kill();
+        attack.kill();
+    }
+    if (p2Hp <= 0) {
+        player2.kill();
+    }
     
     //  Reset the players velocity (movement)
     player.body.velocity.x = 0;
@@ -184,6 +216,17 @@ function update() {
         {
             player.body.velocity.y = -150;
         }
+    else if (qKey.isDown)
+        {
+            //Cat(Attack) follows player
+            attack = game.add.sprite(player.x,player.y, 'slash');
+            game.physics.enable(attack);
+            game.physics.arcade.overlap(attack, boss, damageBoss(), null, this);
+            //attack.x = player.x+10;
+            //attack.y = player.y;
+            //p1AT=10;
+            attack.kill();
+        }
     else
     {
         //  Stand still
@@ -215,6 +258,13 @@ function update() {
         {
             player2.body.velocity.y = -150;
         }
+    else if (eKey.isDown)
+        {
+            //Cat(Attack) follows player
+            p2Attack.x = player2.x+10;
+            p2Attack.y = player2.y;
+            p2AT = 15;
+        }
     else
     {
         //  Stand still
@@ -235,12 +285,32 @@ function pushStuff (player, objects) {
 //Attack
 function damageBoss () {
     if (game.physics.arcade.overlap(attack, boss)) {
-        bossHp -= .5;
+        bossHp -= 2;
         console.log ("Boss HP: " + bossHp);
     }
-    console.log(attack.x + ", " + attack.y);
-    console.log(boss.x + ", " + boss.y);
+    if (game.physics.arcade.overlap(p2Attack, boss)) {
+        bossHp -= 2;
+        console.log ("Boss HP: " + bossHp);
+    }
+} 
+//Enemy Attack
+function damagePlayer () {
+    if (game.physics.arcade.overlap(eAttack, player)) {
+        p1Hp -= 2;
+        console.log ("Player1 HP: " + p1Hp);
+    }
+    if (game.physics.arcade.overlap(eAttack, player2)) {
+        p2Hp -= 2;
+        console.log ("Player 2 HP: " + p2Hp);
+    }
 }
+
+/*function damagePlayer2 () {
+    if (game.physics.arcade.overlap(eAttack, player2)) {
+        p2Hp -= 1;
+        console.log ("Player 2 HP: " + p2Hp);
+    }
+} */
 
 function pressed () {
 //console.log("run");
