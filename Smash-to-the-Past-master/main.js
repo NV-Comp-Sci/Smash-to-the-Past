@@ -1,5 +1,8 @@
 
 var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+
+
 //var keyboard = new Keyboard(this);
 function preload() {
 
@@ -11,12 +14,14 @@ function preload() {
     game.load.image('box', 'assets/box.png');
     game.load.spritesheet('boss','assets/Boss.png',68,84);
     game.load.spritesheet('button', 'assets/Button (1).png', 63, 26);
+    game.load.image("bg", 'assets/bg.png');
 }
 
 var player;
+var spacebar;
 var player2;
 var boss;
-//var w = game.input.keyboard.addkey(new Key(game,Phaser.keyCode.W));
+//var move = Phaser.Keyboard.addKeys({'up':Phaser.KeyCode.W,'down':Phaser.KeyCode.S,'left':Phaser.KeyCode.A,'right':Phaser.KeyCode.D});
 var platforms;
 var cursors;
 var objects;
@@ -28,6 +33,9 @@ var ground;
 var Button;
 var box;
 var press = false;
+
+
+
 
 function create() {
 
@@ -89,21 +97,39 @@ function create() {
     player2.body.allowGravity = false;
     boss.body.allowGravity = false;
 
+    //keyboard declariations
+    spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    escape = game.input.keyboard.addKey(Phaser.Keyboard.ESCAPE);
+    
     
     //  Our two animations, walking left and right.
    // player.animations.add('left', [0, 1, 2, 3], 10, true);
     //player.animations.add('right', [5, 6, 7, 8], 10, true);
 
-    //  The score
-    scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
-
+    //create scoreText
+    var scoreText = game.add.text(16,17, 'score: 0', { fontSize: '32px', fill: '#ff0000' });
+    scoreText.inputEnabled = false;
+    scoreText.fixedToCamera = true;
+    
+    
+    //pause game function
+    escape.events.isDown.add(function() {
+        game.paused = true;
+    })
+    
+    //image (possible placeholder)
+    
+    //input to callback resume function
+    game.input.onDown.add(unpause, escape);
+    
     //  Our controls.
     cursors = game.input.keyboard.createCursorKeys();
     game.camera.follow(player);
 }
 
-function update() {
 
+function update() {
+    
     //  Collide the player and the stars with the platforms
     var hitPlatform = game.physics.arcade.collide(player, platforms);
     game.physics.arcade.collide(player2,platforms);
@@ -125,7 +151,8 @@ function update() {
     player.body.velocity.y = 0;
     boss.body.velocity.x = 0;
     boss.body.velocity.y = 0;
-
+    
+    
     if (cursors.left.isDown)
     {
         //  Move to the left
@@ -133,18 +160,18 @@ function update() {
 
        // player.animations.play('left');
     }
-    else if (cursors.right.isDown)
+     if (cursors.right.isDown)
     {
         //  Move to the right
         player.body.velocity.x = 150;
 
         //player.animations.play('right');
     }
-    else if (cursors.down.isDown)
+     if (cursors.down.isDown)
         {
             player.body.velocity.y =  150;
         }
-    else if (cursors.up.isDown)
+     if (cursors.up.isDown)
         {
             player.body.velocity.y = -150;
         }
@@ -163,7 +190,9 @@ function update() {
     }
     bossMovement();
     //tracking(boss,player);
-   // sector(100,player.x-boss.x,player.y-boss.y,25,0);
+    sector(100,player.x-boss.x,player.y-boss.y,25,0);
+    
+   
 }
 
 function pushStuff (player, objects) {
@@ -171,20 +200,19 @@ function pushStuff (player, objects) {
 }
 
 function pressed () {
-//console.log("run");
 
     if (game.physics.arcade.overlap(Button, player)) {
-       // console.log("Hello");
+      
         Button.frame = 1;
         press = true;    
     }
     else if (game.physics.arcade.overlap(Button, box)) {
-       // console.log("Hello");
+       
         Button.frame = 1;
         press = true;
     }
     else {
-       // console.log("bye");
+      
         press = false;
         Button.frame = 0;
     }
@@ -230,15 +258,25 @@ function sector(radius,x,y,percent,start)
     
     if (angle>=start && angle<=end && polrad<radius) 
         tracking(boss,player);
-    else
-        console.log("Point"+"("+x+","+y+")"+ 
-        " this point doesn't exist in the circle sector\n"); 
+}
+
+
+
+function unpause(event) {
+    if (game.paused) {
+        //run menu if you have if statement to control menu board have else statement run unpause
+        game.paused = false;
+    } 
+}
+
+
+
+function createHud() {
+   
 }
 
 function bossMovement()
 {
-    console.log(boss.x + " this is the x");
-    console.log(boss.y + " this is the y");
     if(boss.x < 700 && boss.x > 200)
         {
             
@@ -253,7 +291,7 @@ function bossMovement()
         }
     
     else if(boss.x == 700 && boss.y == game.world.height - 150)
-        {console.log(game.world.height - 150);
+        {
          
             boss.body.velocity.x = -150;
         }
@@ -278,7 +316,6 @@ function bossMovement()
                     boss.body.velocity.y = 150;
                 }
             else{
-                console.log('hi');
                 boss.body.velocity.y = -150;
             }
         }
