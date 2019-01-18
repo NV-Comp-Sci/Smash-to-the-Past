@@ -36,6 +36,8 @@ var press = false;
 
 var spacebar;
 var escape; 
+var x = 800;
+var y = 600;
 
 
 function create() {
@@ -98,9 +100,21 @@ function create() {
     player2.body.allowGravity = false;
     boss.body.allowGravity = false;
 
+    
+    //menu--------------------------------------------------
+    
+    menu = game.add.sprite(x/2,y/2, "ground");
+        menu.fixedToCamera = true;
+    menu.hidden = true;
+    
+    //menu--------------------------------------------------
+    
+    
+    
+    
     //keyboard declariations
     spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    escape = game.input.keyboard.addKey(Phaser.Keyboard.V);
+    escape = game.input.keyboard.addKey(Phaser.Keyboard.ESC);
     
     
     //  Our two animations, walking left and right.
@@ -114,14 +128,11 @@ function create() {
     
     
     //pause game function
-    escape.events.isDown.add(function() {
-        game.paused = true;
-    })
     
-    //image (possible placeholder)
+    escape.onDown.add(pauseHandler,this);
+    
     
     //input to callback resume function
-    game.input.onDown.add(unpause, escape);
     
     //  Our controls.
     cursors = game.input.keyboard.createCursorKeys();
@@ -263,11 +274,16 @@ function sector(radius,x,y,percent,start)
 
 
 
-function unpause(event) {
-    if (game.paused) {
-        //run menu if you have if statement to control menu board have else statement run unpause
+function pauseHandler(event) {
+    
+    if(game.paused) {
+       
         game.paused = false;
-    } 
+    } else {
+        
+        game.paused = true;
+        
+    }
 }
 
 
