@@ -9,6 +9,7 @@ function preload() {
     game.load.image('dude', 'assets/mini boss.png');
     game.load.image("p2",'assets/small knight.png');
     game.load.image('box', 'assets/box.png');
+    game.load.image('arrow', 'assets/Arrow.png');
     game.load.spritesheet('boss','assets/Boss.png',84,74);
     game.load.spritesheet('slash','assets/mew.png', 280, 194);
     game.load.spritesheet('eSlash','assets/mew2.png');
@@ -36,7 +37,8 @@ var Button;
 var box;
 var press = false;
 var wKey;
-
+var arrows;
+var aTicks = 0;
 
 function create() {
     
@@ -94,6 +96,10 @@ function create() {
     attack = game.add.sprite(-1000,-1000, 'slash');
     game.physics.enable(attack);
     //P2 Attack
+    arrows = game.add.group();
+    arrows.enableBody = true;
+    arrow = arrows.create(-1000, -1000, 'arrow');
+    
     p2Attack = game.add.sprite(-1000,-1000, 'slash');
     game.physics.enable(p2Attack);
     //enemyAttack (eAttack)
@@ -131,7 +137,6 @@ function create() {
 }
 
 function update() {
-
     //  Collide the player and the stars with the platforms
     var hitPlatform = game.physics.arcade.collide(player, platforms);
     game.physics.arcade.collide(player2,platforms);
@@ -153,10 +158,12 @@ function update() {
     */
     
     //Attack
-    game.physics.arcade.overlap(p2Attack, boss, damageBoss(), null, this);
+    game.physics.arcade.overlap(arrows, boss, damageBossA, null, this);
     game.physics.arcade.overlap(eAttack, player, damagePlayer(), null, this);
     p1AT -=1;
     p2AT -=1;
+    
+    aTicks -= 1;
     
     //Old Attack Performance
     /* if(p1AT <=0) {
@@ -165,10 +172,10 @@ function update() {
         attack.kill();
     } */
     
-    if(p2AT <=0) {
+    /*if(p2AT <=0) {
         p2Attack.x = -1000;
         p2Attack.y = -1000;
-    }
+    } */
     
     //Enemy Death
     if (bossHp <= 0) {
@@ -260,10 +267,14 @@ function update() {
         }
     else if (eKey.isDown)
         {
+            if (aTicks <= 0) {
+            aTicks = 30;
+            let arrow = arrows.create(player2.x+35,player2.y, 'arrow');
+            arrow.angle = 45;
             //Cat(Attack) follows player
-            p2Attack.x = player2.x+10;
-            p2Attack.y = player2.y;
+            arrow.body.velocity.x = 150;  
             p2AT = 15;
+            }
         }
     else
     {
@@ -287,11 +298,14 @@ function damageBoss () {
     if (game.physics.arcade.overlap(attack, boss)) {
         bossHp -= 2;
         console.log ("Boss HP: " + bossHp);
+        boss.x += 25;
     }
-    if (game.physics.arcade.overlap(p2Attack, boss)) {
-        bossHp -= 2;
+} 
+function damageBossA (boss, arrow) {
+        bossHp -= 10;
         console.log ("Boss HP: " + bossHp);
-    }
+        boss.x += 25;
+        arrow.kill();
 } 
 //Enemy Attack
 function damagePlayer () {
