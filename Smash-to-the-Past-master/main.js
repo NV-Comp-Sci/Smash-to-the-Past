@@ -9,14 +9,23 @@ function preload() {
     game.load.image('dude', 'assets/mini boss.png');
     game.load.image("p2",'assets/small knight.png');
     game.load.image('box', 'assets/box.png');
+    game.load.image('arrow',"assets/Arrow.png");
     game.load.spritesheet('boss','assets/Boss.png',68,84);
+    game.load.spritesheet("slash","assets/mew.png");
+    game.oad.spritesheet("eSlash",'assets/mew2.png');
     game.load.spritesheet('button', 'assets/Button (1).png', 63, 26);
+    game.load.image("bg","assets/bg.png");
 }
 
 var player;
+var p1HP = 100;
+var p1AT = 10;
 var player2;
+var p2HP = 100;
+var p2AT = 10;
 var boss;
-//var w = game.input.keyboard.addkey(new Key(game,Phaser.keyCode.W));
+var bossHP = 100;
+var wKey;
 var platforms;
 var cursors;
 var objects;
@@ -28,12 +37,23 @@ var ground;
 var Button;
 var box;
 var press = false;
+var tick = 0;
+var score = 0;
+var scoreText;
+var press = false;
+var arrows;
+var aTicks = 0;
+
+var spacebar;
+var escape;
+var x;
+var y;
 
 function create() {
 
     //  We're going to be using physics, so enable the Arcade Physics system
     game.physics.startSystem(Phaser.Physics.ARCADE);
-
+     wKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
     //  A simple background for our game
     game.add.sprite(0, 0, 'sky');
     game.world.setBounds(0,0,1240,1629);
@@ -71,7 +91,21 @@ function create() {
     player = game.add.sprite(32, game.world.height - 150, 'dude');
     player2 = game.add.sprite(500,game.world.height - 150,'p2');
     boss = game.add.sprite(700,game.world.height - 150,'boss');
-
+    
+    //Attack
+    attack = game.add.sprite(-1000,-1000, 'slash');
+    game.physics.enable(attack);
+    //P2 Attack
+    arrows = game.add.group();
+    arrows.enableBody = true;
+    arrow = arrows.create(-1000, -1000, 'arrow');
+    
+    p2Attack = game.add.sprite(-1000,-1000, 'slash');
+    game.physics.enable(p2Attack);
+    //enemyAttack (eAttack)
+    eAttack = game.add.sprite(-1000, -1000, 'eSlash');
+    game.physics.enable(eAttack);
+    
     //  We need to enable physics on the player
     game.physics.arcade.enable(player);
     game.physics.arcade.enable(player2);
@@ -90,12 +124,35 @@ function create() {
     boss.body.allowGravity = false;
 
     
+    //menu--------------------------------------------------
+    
+    menu = game.add.sprite(x/2,y/2, "ground");
+        menu.fixedToCamera = true;
+    menu.hidden = true;
+    
+    //menu--------------------------------------------------
+    
+    
+    
+    
+    //keyboard declariations
+    spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    escape = game.input.keyboard.addKey(Phaser.Keyboard.ESC);
+    wKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+    aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+    sKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
+    dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+    qKey = game.input.keyboard.addKey(Phaser.Keyboard.Q);
+    eKey = game.input.keyboard.addKey(Phaser.Keyboard.E);
+    
     //  Our two animations, walking left and right.
    // player.animations.add('left', [0, 1, 2, 3], 10, true);
     //player.animations.add('right', [5, 6, 7, 8], 10, true);
 
     //  The score
     scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+    scoreText.inputEnabled = false;
+    scoreText.fixedToCamera = true;
 
     //  Our controls.
     cursors = game.input.keyboard.createCursorKeys();
@@ -120,12 +177,36 @@ function update() {
     game.physics.arcade.overlap(player, objects, pushStuff, null, this);
 
 
+    //Attack
+    game.physics.arcade.overlap(arrows, boss, damageBossA, null, this);
+    game.physics.arcade.overlap(eAttack, player, damagePlayer(), null, this);
+    p1AT -=1;
+    p2AT -=1;
+    
+    aTicks -= 1;
+    
+     //Enemy Death
+    if (bossHp <= 0) {
+        boss.kill();
+    } 
+    
+    
+    //Player Death
+    if (p1Hp <= 0) {
+        player.kill();
+        attack.kill();
+    }
+    if (p2Hp <= 0) {
+        player2.kill();
+    }
+    
     //  Reset the players velocity (movement)
     player.body.velocity.x = 0;
     player.body.velocity.y = 0;
     boss.body.velocity.x = 0;
     boss.body.velocity.y = 0;
 
+   //Player 1 Movement
     if (cursors.left.isDown)
     {
         //  Move to the left
@@ -148,10 +229,63 @@ function update() {
         {
             player.body.velocity.y = -150;
         }
+    else if (qKey.isDown)
+        {
+            //Cat(Attack) follows player
+            attack = game.add.sprite(player.x,player.y, 'slash');
+            game.physics.enable(attack);
+            game.physics.arcade.overlap(attack, boss, damageBoss(), null, this);
+            //attack.x = player.x+10;
+            //attack.y = player.y;
+            //p1AT=10;
+            attack.kill();
+        }
     else
     {
         //  Stand still
         player.animations.stop();
+
+        //player.frame = 4;
+    }
+    
+    //Player 2 Movement
+    if (aKey.isDown)
+    {
+        //  Move to the left
+        player2.body.velocity.x = -150;
+
+       // player.animations.play('left');
+    }
+    else if (dKey.isDown)
+    {
+        //  Move to the right
+        player2.body.velocity.x = 150;
+
+        //player.animations.play('right');
+    }
+    else if (sKey.isDown)
+        {
+            player2.body.velocity.y =  150;
+        }
+    else if (wKey.isDown)
+        {
+            player2.body.velocity.y = -150;
+        }
+    else if (eKey.isDown)
+        {
+            if (aTicks <= 0) {
+            aTicks = 30;
+            let arrow = arrows.create(player2.x+35,player2.y, 'arrow');
+            arrow.angle = 45;
+            //Cat(Attack) follows player
+            arrow.body.velocity.x = 150;  
+            p2AT = 15;
+            }
+        }
+    else
+    {
+        //  Stand still
+        player2.animations.stop();
 
         //player.frame = 4;
     }
@@ -163,7 +297,7 @@ function update() {
     }
     bossMovement();
     //tracking(boss,player);
-   // sector(100,player.x-boss.x,player.y-boss.y,25,0);
+    sector(100,player.x-boss.x,player.y-boss.y,25,0);
 }
 
 function pushStuff (player, objects) {
@@ -230,15 +364,24 @@ function sector(radius,x,y,percent,start)
     
     if (angle>=start && angle<=end && polrad<radius) 
         tracking(boss,player);
-    else
-        console.log("Point"+"("+x+","+y+")"+ 
-        " this point doesn't exist in the circle sector\n"); 
+    
+        
 }
+
+function pauseHandler(event)
+{
+    if(game.paused){
+        game.paused = false;
+       }
+    else{
+        game.paused = true;
+    }
+}
+
 
 function bossMovement()
 {
-    console.log(boss.x + " this is the x");
-    console.log(boss.y + " this is the y");
+   
     if(boss.x < 700 && boss.x > 200)
         {
             
@@ -253,7 +396,7 @@ function bossMovement()
         }
     
     else if(boss.x == 700 && boss.y == game.world.height - 150)
-        {console.log(game.world.height - 150);
+        {
          
             boss.body.velocity.x = -150;
         }
@@ -278,9 +421,35 @@ function bossMovement()
                     boss.body.velocity.y = 150;
                 }
             else{
-                console.log('hi');
+               
                 boss.body.velocity.y = -150;
             }
         }
 }
+//Attack
+function damageBoss () {
+    if (game.physics.arcade.overlap(attack, boss)) {
+        bossHp -= 2;
+        console.log ("Boss HP: " + bossHp);
+        boss.x += 25;
+    }
+} 
+function damageBossA (boss, arrow) {
+        bossHp -= 10;
+        console.log ("Boss HP: " + bossHp);
+        boss.x += 25;
+        arrow.kill();
+} 
+//Enemy Attack
+function damagePlayer () {
+    if (game.physics.arcade.overlap(eAttack, player)) {
+        p1Hp -= 2;
+        console.log ("Player1 HP: " + p1Hp);
+    }
+    if (game.physics.arcade.overlap(eAttack, player2)) {
+        p2Hp -= 2;
+        console.log ("Player 2 HP: " + p2Hp);
+    }
+}
+
 
