@@ -12,19 +12,19 @@ function preload() {
     game.load.image('arrow',"assets/Arrow.png");
     game.load.spritesheet('boss','assets/Boss.png',68,84);
     game.load.spritesheet("slash","assets/mew.png");
-    game.oad.spritesheet("eSlash",'assets/mew2.png');
+    game.load.spritesheet("eSlash",'assets/mew2.png');
     game.load.spritesheet('button', 'assets/Button (1).png', 63, 26);
     game.load.image("bg","assets/bg.png");
 }
 
 var player;
-var p1HP = 100;
+var p1Hp = 100;
 var p1AT = 10;
 var player2;
-var p2HP = 100;
+var p2Hp = 100;
 var p2AT = 10;
 var boss;
-var bossHP = 100;
+var bossHp = 100;
 var wKey;
 var platforms;
 var cursors;
@@ -157,6 +157,8 @@ function create() {
     //  Our controls.
     cursors = game.input.keyboard.createCursorKeys();
     game.camera.follow(player);
+    //pause handler
+    escape.onDown.add(pauseHandler,this);
 }
 
 function update() {
@@ -214,22 +216,22 @@ function update() {
 
        // player.animations.play('left');
     }
-    else if (cursors.right.isDown)
+     if (cursors.right.isDown)
     {
         //  Move to the right
         player.body.velocity.x = 150;
 
         //player.animations.play('right');
     }
-    else if (cursors.down.isDown)
+     if (cursors.down.isDown)
         {
             player.body.velocity.y =  150;
         }
-    else if (cursors.up.isDown)
+     if (cursors.up.isDown)
         {
             player.body.velocity.y = -150;
         }
-    else if (qKey.isDown)
+     if (qKey.isDown)
         {
             //Cat(Attack) follows player
             attack = game.add.sprite(player.x,player.y, 'slash');
@@ -256,22 +258,22 @@ function update() {
 
        // player.animations.play('left');
     }
-    else if (dKey.isDown)
+     if (dKey.isDown)
     {
         //  Move to the right
         player2.body.velocity.x = 150;
 
         //player.animations.play('right');
     }
-    else if (sKey.isDown)
+     if (sKey.isDown)
         {
             player2.body.velocity.y =  150;
         }
-    else if (wKey.isDown)
+     if (wKey.isDown)
         {
             player2.body.velocity.y = -150;
         }
-    else if (eKey.isDown)
+     if (eKey.isDown)
         {
             if (aTicks <= 0) {
             aTicks = 30;
