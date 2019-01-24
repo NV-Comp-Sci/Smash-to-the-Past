@@ -14,7 +14,13 @@ function preload() {
     game.load.image('box', 'assets/box.png');
     game.load.spritesheet('boss','assets/Boss.png',68,84);
     game.load.spritesheet('button', 'assets/Button (1).png', 63, 26);
+    
+    
+    //loading menu assets
     game.load.image("bg", 'assets/bg.png');
+    game.load.image("mm", 'assets/Main Menu.png');
+    game.load.image('helpButton', 'assets/Help & Options.gif');
+    
 }
 
 var player;
@@ -36,9 +42,11 @@ var press = false;
 
 var spacebar;
 var escape; 
-var x = 800;
-var y = 600;
-
+var x = 0;
+var y = 0;
+var mainmenu;
+var helpButton;
+var menu;
 
 function create() {
 
@@ -102,10 +110,21 @@ function create() {
 
     
     //menu--------------------------------------------------
-    
-    menu = game.add.sprite(x/2,y/2, "ground");
+   
+    menu = game.add.sprite(x,y, "bg");
         menu.fixedToCamera = true;
-    menu.hidden = true;
+        menu.visible = false;
+    mainMenu = game.add.sprite(x,y, "mm");
+        mainMenu.fixedToCamera = true;
+        mainMenu.visible = false;
+    helpButton = game.add.sprite(0,200, "helpButton");
+        helpButton.fixedToCamera = true;
+        helpButton.visible = false;
+    //menu input handling
+    mainMenu.inputEnabled = true;
+    
+    mainMenu.input.onDown.add(menu,this);
+    
     
     //menu--------------------------------------------------
     
@@ -122,10 +141,11 @@ function create() {
     //player.animations.add('right', [5, 6, 7, 8], 10, true);
 
     //create scoreText
-    var scoreText = game.add.text(16,17, 'score: 0', { fontSize: '32px', fill: '#ff0000' });
+    
+    /*var scoreText = game.add.text(16,17, 'score: 0', { fontSize: '32px', fill: '#ff0000' });
     scoreText.inputEnabled = false;
     scoreText.fixedToCamera = true;
-    
+    */
     
     //pause game function
     
@@ -277,19 +297,21 @@ function sector(radius,x,y,percent,start)
 function pauseHandler(event) {
     
     if(game.paused) {
-       
+       menu.visible = false;
+        mainMenu.visible = false;
+        helpButton.visible = false;
         game.paused = false;
     } else {
-        
+        menu.visible = true;
+        mainMenu.visible = true;
+        helpButton.visible = true;
         game.paused = true;
         
     }
 }
 
-
-
-function createHud() {
-   
+function menu(event) {
+    console.log("fuck sake if this prints thank the God above");
 }
 
 function bossMovement()
